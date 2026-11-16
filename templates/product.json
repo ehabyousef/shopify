@@ -17,7 +17,7 @@
           "static": true,
           "settings": {
             "media_presentation": "grid",
-            "media_columns": "one",
+            "media_columns": "two",
             "image_gap": 0,
             "large_first_image": false,
             "icons_style": "arrow",
@@ -33,7 +33,7 @@
             "extend_media": true,
             "zoom": true,
             "video_loop": false,
-            "hide_variants": true,
+            "hide_variants": false,
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
