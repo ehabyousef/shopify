@@ -113,8 +113,8 @@
       "name": "t:names.collection_links",
       "settings": {
         "collection_list": [
-          "best-sellers",
           "bags",
+          "best-sellers",
           "boots",
           "heels"
         ],
@@ -135,7 +135,7 @@
           "static": true,
           "settings": {
             "media_type": "image",
-            "image": "shopify://shop_images/loved.jpg",
+            "image": "shopify://shop_images/gs.jpg",
             "link": "",
             "video_loop": true,
             "video_autoplay": false,
@@ -191,7 +191,7 @@
               "static": true,
               "settings": {
                 "image_ratio": "adapt",
-                "constrain_to_viewport": "contain"
+                "constrain_to_viewport": "cover"
               },
               "blocks": {}
             },
