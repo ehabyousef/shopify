@@ -1,5 +1,3 @@
-
-
 {% liquid
   assign media_count = 0
   assign media_count_mobile = 0
@@ -111,11 +109,6 @@
 
   if section.index == 1
     assign fetch_priority = 'high'
-  endif
-
-  assign has_slide_content = false
-  if section.settings.slide_1_heading != blank or section.settings.slide_1_link != blank or section.settings.slide_2_heading != blank or section.settings.slide_2_link != blank
-    assign has_slide_content = true
   endif
 %}
 
@@ -515,7 +508,7 @@
     class="hero__container spacing-style section section--full-width"
     style="{% render 'spacing-style', settings: section.settings %}"
   >
-    {%- if section.settings.link != blank and has_slide_content == false -%}
+    {%- if section.settings.link != blank -%}
       {% capture link_label %}{% render 'link-label', url: section.settings.link %}{% endcapture %}
       <a
         href="{{ section.settings.link }}"
@@ -529,82 +522,17 @@
       ></a>
     {%- endif -%}
     <div
-      class="hero__media-grid{% if media_count > 1 %} hero__media-grid--slider{% endif %}"
+      class="hero__media-grid"
       style="--hero-media-count: {{ media_count }};--hero-media-count-mobile: {{ media_count_mobile }};{%- if section.settings.image_1 != blank -%} --hero-media-aspect-ratio: {{ section.settings.image_1.aspect_ratio }};{% endif %}"
       data-testid="hero-media-wrapper"
-      {% if media_count > 1 %}data-hero-slider{% endif %}
     >
       {% liquid
         if section.settings.toggle_overlay
           render 'overlay', settings: section.settings
         endif
       %}
-      {% if media_count > 0 %}
-        {% if media_1 != 'none' %}
-          <div class="hero__slide" data-hero-slide>
-            {{ media_slot_1 }}
-            {% if has_slide_content %}
-              {% if section.settings.slide_1_link != blank %}
-                <a
-                  class="hero__slide-link"
-                  href="{{ section.settings.slide_1_link | escape }}"
-                  aria-label="{{ section.settings.slide_1_heading | default: 'View slide' | escape }}"
-                  {% if section.settings.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}
-                ></a>
-              {% endif %}
-              {% if section.settings.slide_1_heading != blank or section.settings.slide_1_link != blank %}
-                <div class="hero__slide-content">
-                  {% if section.settings.slide_1_heading != blank %}
-                    <h2 class="hero__slide-heading">{{ section.settings.slide_1_heading | escape }}</h2>
-                  {% endif %}
-                </div>
-              {% endif %}
-            {% endif %}
-          </div>
-        {% endif %}
-        {% if media_2 != 'none' %}
-          <div class="hero__slide" data-hero-slide>
-            {{ media_slot_2 }}
-            {% if has_slide_content %}
-              {% if section.settings.slide_2_link != blank %}
-                <a
-                  class="hero__slide-link"
-                  href="{{ section.settings.slide_2_link | escape }}"
-                  aria-label="{{ section.settings.slide_2_heading | default: 'View slide' | escape }}"
-                  {% if section.settings.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}
-                ></a>
-              {% endif %}
-              {% if section.settings.slide_2_heading != blank or section.settings.slide_2_link != blank %}
-                <div class="hero__slide-content">
-                  {% if section.settings.slide_2_heading != blank %}
-                    <h2 class="hero__slide-heading">{{ section.settings.slide_2_heading | escape }}</h2>
-                  {% endif %}
-                </div>
-              {% endif %}
-            {% endif %}
-          </div>
-        {% endif %}
-      {% else %}
-        {{ media }}
-      {% endif %}
+      {{ media }}
     </div>
-    {% if media_count > 1 %}
-      <div class="hero__slider-controls" aria-label="Hero slides">
-        <button type="button" class="hero__slider-button" data-hero-prev aria-label="Previous slide">‹</button>
-        <div class="hero__slider-dots">
-          {% for index in (1..media_count) %}
-            <button
-              type="button"
-              class="hero__slider-dot{% if forloop.first %} is-active{% endif %}"
-              data-hero-dot="{{ forloop.index0 }}"
-              aria-label="Go to slide {{ forloop.index }}"
-              aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
-            ></button>
-          {% endfor %}
-        </div>
-        <button type="button" class="hero__slider-button" data-hero-next aria-label="Next slide">›</button>
-      </div>
-    {% endif %}
     <div
       class="
         hero__content-wrapper
@@ -617,53 +545,10 @@
       "
       style="{% render 'layout-panel-style', settings: section.settings %}"
     >
-      {% unless has_slide_content %}
-        {% content_for 'blocks' %}
-      {% endunless %}
+      {% content_for 'blocks' %}
     </div>
   </div>
 </div>
-
-{% if media_count > 1 %}
-  <script>
-    (() => {
-      const hero = document.querySelector('#Hero-{{ section.id }}');
-      const slider = hero && hero.querySelector('[data-hero-slider]');
-      if (!hero || !slider) return;
-
-      const slides = [...slider.querySelectorAll('[data-hero-slide]')];
-      const dots = [...hero.querySelectorAll('[data-hero-dot]')];
-      const updateActiveDot = () => {
-        const index = Math.round(slider.scrollLeft / slider.clientWidth);
-        dots.forEach((dot, dotIndex) => {
-          const active = dotIndex === index;
-          dot.classList.toggle('is-active', active);
-          dot.setAttribute('aria-current', active ? 'true' : 'false');
-        });
-      };
-      const goTo = (index) => {
-        const target = slides[(index + slides.length) % slides.length];
-        if (target) slider.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
-      };
-
-      const previousButton = hero.querySelector('[data-hero-prev]');
-      const nextButton = hero.querySelector('[data-hero-next]');
-      if (previousButton) {
-        previousButton.addEventListener('click', () => {
-          goTo(Math.round(slider.scrollLeft / slider.clientWidth) - 1);
-        });
-      }
-      if (nextButton) {
-        nextButton.addEventListener('click', () => {
-          goTo(Math.round(slider.scrollLeft / slider.clientWidth) + 1);
-        });
-      }
-      dots.forEach((dot) => dot.addEventListener('click', () => goTo(Number(dot.dataset.heroDot))));
-      slider.addEventListener('scroll', updateActiveDot, { passive: true });
-      updateActiveDot();
-    })();
-  </script>
-{% endif %}
 
 {% stylesheet %}
   .hero-wrapper {
@@ -722,113 +607,6 @@
     display: grid;
     grid-column: 1 / -1;
     grid-template-columns: repeat(var(--hero-media-count, 1), 1fr);
-  }
-
-  .hero__media-grid--slider {
-    display: flex;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-
-  .hero__media-grid--slider::-webkit-scrollbar {
-    display: none;
-  }
-
-  .hero__media-grid--slider > .hero__media-wrapper,
-  .hero__media-grid--slider > .hero__media {
-    flex: 0 0 100%;
-    min-width: 100%;
-    scroll-snap-align: start;
-  }
-
-  .hero__slide {
-    position: relative;
-    flex: 0 0 100%;
-    min-width: 100%;
-    overflow: hidden;
-    scroll-snap-align: start;
-  }
-
-  .hero__slide-content {
-    position: absolute;
-    inset: auto auto var(--page-margin, 24px) 50%;
-    width: min(90%, 700px);
-    transform: translateX(-50%);
-    z-index: var(--layer-flat);
-    color: var(--color, var(--color-foreground));
-    text-align: center;
-    pointer-events: none;
-  }
-
-  .hero__slide-heading {
-    margin: 0 0 1rem;
-    color: var(--color, var(--color-background));
-    font-family: var(--font-heading--family);
-    font-style: var(--font-h1--style, var(--font-heading--style));
-    font-weight: var(--font-h1--weight, var(--font-heading--weight));
-    font-size: var(--font-h1--size);
-    line-height: var(--font-h1--line-height);
-    letter-spacing: var(--font-h1--letter-spacing);
-    text-transform: var(--font-h1--case);
-  }
-
-  .hero__slide-link {
-    position: absolute;
-    inset: 0;
-    z-index: var(--layer-flat);
-  }
-
-  .hero__slider-controls {
-    position: absolute;
-    inset: 0;
-    z-index: var(--layer-flat);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    pointer-events: auto;
-  }
-
-  .hero__slider-button,
-  .hero__slider-dot {
-    border: 0;
-    color: inherit;
-    cursor: pointer;
-  }
-
-  .hero__slider-button {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-inline: var(--page-margin, 24px);
-    padding: 0;
-    background: #fff;
-    color: var(--color-foreground);
-    font-size: 1.5rem;
-    line-height: 0;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
-  }
-
-  .hero__slider-dots {
-    position: absolute;
-    inset-block-end: var(--page-margin, 24px);
-    inset-inline-start: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 0.4rem;
-  }
-
-  .hero__slider-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    padding: 0;
-    background: rgb(255 255 255 / 55%);
-    border-radius: 50%;
-  }
-
-  .hero__slider-dot.is-active {
-    background: #fff;
   }
 
   .hero--auto .hero__media {
@@ -1088,31 +866,6 @@
       "id": "video_2",
       "label": "t:settings.video",
       "visible_if": "{{ section.settings.media_type_2 == 'video' }}"
-    },
-    {
-      "type": "header",
-      "content": "Slide content"
-    },
-    {
-      "type": "text",
-      "id": "slide_1_heading",
-      "label": "Slide 1 heading",
-      "info": "When filled, this replaces the hero blocks and makes each media slot a separate slide."
-    },
-    {
-      "type": "url",
-      "id": "slide_1_link",
-      "label": "Slide 1 link"
-    },
-    {
-      "type": "text",
-      "id": "slide_2_heading",
-      "label": "Slide 2 heading"
-    },
-    {
-      "type": "url",
-      "id": "slide_2_link",
-      "label": "Slide 2 link"
     },
     {
       "type": "header",
